@@ -7,6 +7,8 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 from PIL import Image, ImageDraw, ImageFont
+from PIL import UnidentifiedImageError
+
 
 # Logging into a file on the server
 import logging
@@ -86,6 +88,12 @@ def add_watermark():
     """Add either text or logo watermark to the original image"""
     watermark_text = text_entry.get()
     watermark_logo = logo_img
+
+    if not original_img:
+        messagebox.showinfo(title="Input Error!!", message="Please specify the base file.")
+    elif not (watermark_text or watermark_logo):
+        messagebox.showinfo(title="Input Error!!", message="Please specify watermark text or logo.")
+
     try:
         if watermark_logo:
             # add_logo(original_img, watermark_logo)
@@ -97,11 +105,17 @@ def add_watermark():
             add_text(original_img, watermark_text)
             messagebox.showinfo(title="Success", message="Watermark Text added. "
                                                          "Check the new file with _watermark name in the same folder.")
-    except OSError as err:
+
+    except ValueError as err:
         messagebox.showinfo(title="Error!!", message="Error!! Please try again.")
         logging.exception(err)
 
-    except ValueError as err:
+    except UnidentifiedImageError:
+        messagebox.showinfo(title="Unsupported file type Error",
+                            message="Original image or logo image file type is not supported."
+                                    " \nPlease use supported image file types.")
+
+    except OSError as err:
         messagebox.showinfo(title="Error!!", message="Error!! Please try again.")
         logging.exception(err)
 
@@ -109,8 +123,8 @@ def add_watermark():
         messagebox.showinfo(title="Error!!", message="Error!! Please try again.")
         logging.exception(err)
 
-# ---------------------------- Tkinter UI SETUP ------------------------------- #
 
+# ---------------------------- Tkinter UI SETUP ------------------------------- #
 window = Tk()
 window.title("Add Watermark")
 window.config(padx=10, pady=20)
